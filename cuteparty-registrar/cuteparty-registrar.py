@@ -21,8 +21,9 @@ db = redis.StrictRedis(host=svc["hostname"], port=svc["port"], password=svc["pas
 def update():
     appname = request.form['applicationname']
     appdetails = request.form['appinfo']
-    print appdetails
-    if appname and appdetails:
+    obj = json.loads(appdetails)
+#     print 'AppDetails *************%s'%obj
+    if appname and obj:
         db.hset('applications', appname, appdetails)
     return json.dumps({'message':'success'})
 
@@ -32,11 +33,13 @@ def update():
 def applicationsdetails():
     appdicts = db.hgetall('applications')
     finaldict = OrderedDict()
-    print appdicts
+#     print appdicts
     for appname in sorted(appdicts):
-        finaldict.__setitem__(appname,db.hgetall(appname))
+        instances = json.loads(appdicts.get(appname))
+#         print instances
+        finaldict.__setitem__(appname,instances)
 #     print mydict
-    mylist = []
+    print finaldict
     return render_template('robots.html', appdicts=finaldict)
 
 
