@@ -19,10 +19,13 @@ db = redis.StrictRedis(host=svc["hostname"], port=svc["port"], password=svc["pas
 
 @app.route('/update',methods=['POST'])
 def update():
+    """
+    This is the entry point for updating the aggregator info
+    Each of the invidividual apps will call this endpoint with their latest info
+    """
     appname = request.form['applicationname']
     appdetails = request.form['appinfo']
     obj = json.loads(appdetails)
-#     print 'AppDetails *************%s'%obj
     if appname and obj:
         db.hset('applications', appname, appdetails)
     return json.dumps({'message':'success'})
@@ -31,20 +34,23 @@ def update():
 
 @app.route('/applicationsdetails')
 def applicationsdetails():
+    """
+    This is the endpoint for providing all info about the applications 
+    This is an internal method for registrator through which index.html loads all info
+    """
     appdicts = db.hgetall('applications')
     finaldict = OrderedDict()
-#     print appdicts
     for appname in sorted(appdicts):
         instances = json.loads(appdicts.get(appname))
-#         print instances
         finaldict.__setitem__(appname,instances)
-#     print mydict
-    print finaldict
     return render_template('robots.html', appdicts=finaldict)
 
 
 @app.route('/')
 def index():
+    """
+    Main entry point
+    """
     return render_template('index.html')
 
 if __name__ == "__main__":
